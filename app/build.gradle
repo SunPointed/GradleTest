@@ -1,0 +1,38 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "com.lqy.gradletest"
+        minSdkVersion 23
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation Boolean.valueOf(useProject) ? project(':base') :
+            (rootProject.ext.appPackageName + ':' + rootProject.ext.baseModuleName + ':' + rootProject.ext.baseModuleVersion)
+    implementation Boolean.valueOf(useProject) ? project(':business') :
+            (rootProject.ext.appPackageName + ':' + rootProject.ext.businessModuleName + ':' + rootProject.ext.businessModuleVersion)
+    implementation Boolean.valueOf(useProject) ? project(':library_1') :
+            (rootProject.ext.appPackageName + ':' + rootProject.ext.library_1ModuleName + ':' + rootProject.ext.library_1ModuleVersion)
+    implementation Boolean.valueOf(useProject) ? project(':library_2') :
+            (rootProject.ext.appPackageName + ':' + rootProject.ext.library_2ModuleName + ':' + rootProject.ext.library_2ModuleVersion)
+    implementation Boolean.valueOf(useProject) ? project(':other') :
+            (rootProject.ext.appPackageName + ':' + rootProject.ext.otherModuleName + ':' + rootProject.ext.otherModuleVersion)
+}
