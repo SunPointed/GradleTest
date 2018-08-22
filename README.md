@@ -201,10 +201,10 @@ pre: 'lqy.com.graldetest:base:xxx'和'lqy.com.graldetest:base:xxx-SNAPSHOT'这�
             }
         }
         uploadlib2.enabled = isLib2
-        if (isUploader) {
+        if (isBusiness) {
             uploadlib2.dependsOn(uploadBusiness)
         }
-        if (isUsb) {
+        if (isOther) {
             uploadlib2.dependsOn(uploadOther)
         }
 ```
