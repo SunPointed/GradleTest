@@ -1,0 +1,1 @@
+gradle -p other clean build uploadArchives

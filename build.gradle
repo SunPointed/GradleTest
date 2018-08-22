@@ -1,24 +1,137 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    
+
     repositories {
         google()
         jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.3'
-        
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
 
+def baseProperty = new Properties()
+def file = new File('upload.properties')
+def stream = file.newDataInputStream()
+baseProperty.load(stream)
+
+def runUpload = Boolean.valueOf(baseProperty.getProperty('RUN_UPLOAD'))
+
+def isOther = Boolean.valueOf(baseProperty.getProperty('other'))
+def isBase = Boolean.valueOf(baseProperty.getProperty('base'))
+def isLib1 = Boolean.valueOf(baseProperty.getProperty('library_1'))
+def isLib2 = Boolean.valueOf(baseProperty.getProperty('library_2'))
+def isBusiness = Boolean.valueOf(baseProperty.getProperty('business'))
+
+if (runUpload) {
+    baseProperty.setProperty('RUN_UPLOAD', 'false')
+    baseProperty.store(file.newWriter(), null)
+
+    task uploadBase(type: Exec) {
+        doFirst {
+            baseProperty.setProperty('base', 'false')
+            baseProperty.store(file.newWriter(), null)
+
+            commandLine './base.sh'
+        }
+    }
+    uploadBase.enabled = isBase
+
+    task uploadBusiness(type: Exec) {
+        doFirst {
+            baseProperty.setProperty('business', 'false')
+            baseProperty.store(file.newWriter(), null)
+
+            commandLine './business.sh'
+        }
+    }
+    uploadBusiness.enabled = isBusiness
+    if (isBase) {
+        uploadBusiness.dependsOn(uploadBase)
+    }
+
+    task uploadOther(type: Exec) {
+        doFirst {
+            baseProperty.setProperty('other', 'false')
+            baseProperty.store(file.newWriter(), null)
+
+            commandLine './other.sh'
+        }
+    }
+    uploadOther.enabled = isOther
+
+    task uploadLib1(type: Exec) {
+        doFirst {
+            baseProperty.setProperty('library_1', 'false')
+            baseProperty.store(file.newWriter(), null)
+
+            commandLine './library_1.sh'
+        }
+    }
+    uploadLib1.enabled = isLib1
+    if (isBusiness) {
+        uploadLib1.dependsOn(uploadBusiness)
+    }
+    if (isOther) {
+        uploadLib1.dependsOn(uploadOther)
+    }
+
+    task uploadlib2(type: Exec) {
+        doFirst {
+            baseProperty.setProperty('library_2', 'false')
+            baseProperty.store(file.newWriter(), null)
+
+            commandLine './library_2.sh'
+        }
+    }
+    uploadlib2.enabled = isLib2
+    if (isUploader) {
+        uploadlib2.dependsOn(uploadBusiness)
+    }
+    if (isUsb) {
+        uploadlib2.dependsOn(uploadOther)
+    }
+}
+
+static def isDependTask(Task t) {
+    return t.getName() != 'uploadOther' && t.getName() != 'uploadBase' && t.getName() != 'uploadBusiness' && t.getName() != 'uploadLib1' && t.getName() != 'uploadLib2'
+}
+
 allprojects {
     repositories {
         google()
         jcenter()
+    }
+    afterEvaluate {
+        if (runUpload) {
+            for (def task in it.tasks) {
+                if (isDependTask(task)) {
+                    if (isOther) {
+                        task.dependsOn(uploadOther)
+                    }
+
+                    if (isBase) {
+                        task.dependsOn(uploadBase)
+                    }
+
+                    if (isBusiness) {
+                        task.dependsOn(uploadBusiness)
+                    }
+
+                    if (isLib1) {
+                        task.dependsOn(uploadLib1)
+                    }
+
+                    if (isLib2) {
+                        task.dependsOn(uploadLib2)
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -1,0 +1,79 @@
+命令：
+    gradle build
+    gradle clean build
+
+说明
+    build依赖gradle.properties和upload.properties两个文件
+
+gradle.properties
+    useProject -》 useProject为true直接依赖project，此时其他变量都不起作用；为false 根据 isRelease的值依赖relase version或snapshot version
+    isRelease -》 isRelease为true -> 打release的aar；false -> 打snapshot的aar
+    （注意：
+        一般来说自己调试时useProject为true；
+        打包snapshot aar时useProject为false，isRelease也为false；
+        打包release aar时useProject为false，isRelease也为true；
+     ）
+    baseVersion、businessVersion、library_1Version、library_2Version、otherVersion表示相应module的relase aar版本号，在isRelease设置为true时起作用
+    baseVersionSnapshot、businessVersionSnapshot、library_1VersionSnapshot、library_2VersionSnapshot、otherVersionSnapshot表示相应module的snapshot aar版本号，在isRelease设置为true时起作用
+
+uploadArchives.properties
+    RUN_UPLOAD -》表示是否在编译前将aar uploadArchives到代码仓库
+    其他的上传关系如下，表示各个module间的打包依赖：
+        1.base -> business -> library_1
+                           -> library_2
+        2.business -> library_1
+                   -> library_2
+        3.other -> library_1
+                    -> library_2
+        4.library_1
+        5.library_2
+    说明，以上面1为例：
+        若修改了base module代码，升级gradle.properties文件base版本后，打包base module的aar；由于business依赖base，则business也需要升级相应版本号并打包aar；同理library_1和library_2两个依赖base及business的module也需要升级
+
+    uploadArchives.properties上传示例(```代表uploadArchives.properties文件内容```)：
+        1.base改动：
+            ```
+            RUN_UPLOAD=true
+            base=true
+            business=true
+            other=false
+            library_1=true
+            library_2=true
+            ```
+        2.business改动：
+            ```
+            RUN_UPLOAD=true
+            base=false
+            business=true
+            other=false
+            library_1=true
+            library_2=true
+            ```
+        3.other改动：
+            ```
+            RUN_UPLOAD=true
+            base=false
+            business=false
+            other=true
+            library_1=true
+            library_2=true
+            ```
+        4.library_1改动：
+            ```
+            RUN_UPLOAD=true
+            base=false
+            business=false
+            other=false
+            library_1=true
+            library_2=false
+            ```
+        5.library_2改动：
+            ```
+            RUN_UPLOAD=true
+            base=false
+            business=false
+            other=false
+            library_1=false
+            library_2=true
+            ```
+    需要上传时RUN_UPLOAD一定为true，改动的module及依赖该module的module设置为true

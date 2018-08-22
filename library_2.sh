@@ -1,0 +1,1 @@
+gradle -p library_2 clean build uploadArchives
